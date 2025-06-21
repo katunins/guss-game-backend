@@ -10,7 +10,7 @@ import { RoundsModule } from './rounds/rounds.module';
 import { Gateway } from './rounds/socket/gateway';
 import { TapsService } from './taps/taps.service';
 import { TapsModule } from './taps/taps.module';
-1;
+
 @Module({
   imports: [
     ConfigModule.forRoot(),

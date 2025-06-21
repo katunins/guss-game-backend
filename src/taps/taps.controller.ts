@@ -19,4 +19,9 @@ export class TapsController {
   findOne(@Param('uuid') uuid: string, @Req() request: Request) {
     return this.tapsService.findOne(uuid, request);
   }
+
+  @Post(':uuid')
+  create(@Param('uuid') uuid: string, @Req() request: Request) {
+    return this.tapsService.create(uuid, request);
+  }
 }

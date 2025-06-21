@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Round } from '../../rounds/entities/round.entity';
 
 @Entity('taps')
+@Unique(['user', 'round'])
 export class Tap {
   @PrimaryGeneratedColumn()
   id: number;

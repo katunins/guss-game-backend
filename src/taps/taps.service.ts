@@ -6,6 +6,7 @@ import { RoundsService } from "src/rounds/rounds.service";
 import { UsersService } from "src/users/users.service";
 import { Request } from "express";
 import { AuthService } from "src/auth/auth.service";
+import dayjs from "dayjs";
 
 @Injectable()
 export class TapsService {
@@ -17,34 +18,52 @@ export class TapsService {
         private readonly authService: AuthService
     ) { }
 
-    async click(username: string, round_uuid: string) {
-        const round = await this.roundsService.findOne(round_uuid);
-        if (!round) {
-            throw new NotFoundException('Round not found');
+    async create(uuid: string, request: Request) {
+        const { username } = this.authService.getUserFromBearer(
+            request.headers.authorization,
+        );
+
+        if (!username) {
+            throw new NotFoundException('User not found');
         }
-        let tap = await this.tapsRepository.findOne({
-            where: {
-                round: { uuid: round_uuid },
+
+        try {
+            return await this.tapsRepository.save({ user: { username }, round: { uuid } })
+        } catch (error) {
+            return this.tapsRepository.findOneBy({
                 user: { username },
-            },
-        });
-        if (!tap) {
-            const user = await this.usersService.getByUserName(username)
-            if (!user || !round) {
-                throw new NotFoundException('Round or User not found');
-            }
-            tap = this.tapsRepository.create({ user, round })
-            await this.tapsRepository.save(tap)
+                round: { uuid },
+            });
         }
-        await this.tapsRepository.increment({ id: tap.id }, 'count', 1)
-        tap.count ++
-        return tap;
+    }
+
+    async click(username: string, round_uuid: string) {
+        // const tap = await this.tapsRepository.findOne({
+        //     where: {
+        //         round: { uuid: round_uuid },
+        //         user: { username },
+        //     },
+        // });
+        // if (!tap) {
+        //     const user = await this.usersService.getByUserName(username)
+        //     const round = await this.roundsService.findOne(round_uuid);
+        //     if (!user || !round) {
+        //         throw new NotFoundException('Round or User not found');
+        //     }
+        //     tap = this.tapsRepository.create({ user, round })
+        //     await this.tapsRepository.save(tap)
+        // }
+        await this.tapsRepository.increment({ user: { username }, round: { uuid: round_uuid } }, 'count', 1)
+        return this.tapsRepository.findOneBy({ user: { username }, round: { uuid: round_uuid } })
+        // return tap.count ++
+        // tap.count ++
+        // return tap;
     }
 
     async findOne(uuid: string, request: Request) {
         const { username } = this.authService.getUserFromBearer(
             request.headers.authorization,
-          );
+        );
         return this.tapsRepository.findOne({
             where: {
                 round: { uuid },
