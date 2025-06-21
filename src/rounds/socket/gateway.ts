@@ -9,10 +9,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { AuthService } from '../../auth/auth.service';
 import { TapsService } from 'src/taps/taps.service';
-import { RoundsService } from '../rounds.service';
-import { ForbiddenException } from '@nestjs/common';
-
-const connections = new Map<string, Socket>();
 
 @WebSocketGateway({
   cors: {
@@ -39,7 +35,6 @@ export class Gateway
         client.handshake.headers.authorization,
       );
       console.log('connect', payload.username, client.id);
-      connections.set(payload.username, client);
     } catch (err) {
       console.log(`Unauthorized socket connection:`, err.message);
       client.disconnect();
@@ -60,11 +55,7 @@ export class Gateway
     client: Socket,
     payload: { round_uuid: string; username: string },
   ) {
-    const { round_uuid, username } = payload;
-    const { id, count } = await this.tapsService.click(username, round_uuid);
-    connections.get(username)?.emit('update', { id, count });
-  }
-  sendToAll(event: string, data: any) {
-    this.server.emit(event, data);
+    const { id, count } = await this.tapsService.click(payload);
+    client.emit('update', { id, count });
   }
 }

@@ -2,19 +2,14 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { Tap } from "./entity/tap.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { RoundsService } from "src/rounds/rounds.service";
-import { UsersService } from "src/users/users.service";
 import { Request } from "express";
 import { AuthService } from "src/auth/auth.service";
-import dayjs from "dayjs";
 
 @Injectable()
 export class TapsService {
     constructor(
         @InjectRepository(Tap)
         private readonly tapsRepository: Repository<Tap>,
-        private readonly roundsService: RoundsService,
-        private readonly usersService: UsersService,
         private readonly authService: AuthService
     ) { }
 
@@ -37,27 +32,9 @@ export class TapsService {
         }
     }
 
-    async click(username: string, round_uuid: string) {
-        // const tap = await this.tapsRepository.findOne({
-        //     where: {
-        //         round: { uuid: round_uuid },
-        //         user: { username },
-        //     },
-        // });
-        // if (!tap) {
-        //     const user = await this.usersService.getByUserName(username)
-        //     const round = await this.roundsService.findOne(round_uuid);
-        //     if (!user || !round) {
-        //         throw new NotFoundException('Round or User not found');
-        //     }
-        //     tap = this.tapsRepository.create({ user, round })
-        //     await this.tapsRepository.save(tap)
-        // }
+    async click({ username, round_uuid }: { username: string, round_uuid: string }) {
         await this.tapsRepository.increment({ user: { username }, round: { uuid: round_uuid } }, 'count', 1)
         return this.tapsRepository.findOneBy({ user: { username }, round: { uuid: round_uuid } })
-        // return tap.count ++
-        // tap.count ++
-        // return tap;
     }
 
     async findOne(uuid: string, request: Request) {
