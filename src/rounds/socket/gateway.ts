@@ -55,7 +55,10 @@ export class Gateway
     client: Socket,
     payload: { round_uuid: string; username: string },
   ) {
-    const { id, count } = await this.tapsService.click(payload);
-    client.emit('update', { id, count });
+    let tap = await this.tapsService.click(payload, 1);
+    if (tap.count === 11) {
+      tap = await this.tapsService.click(payload, 10);
+    }
+    client.emit('update', { id: tap.id, count: tap.count });
   }
 }
