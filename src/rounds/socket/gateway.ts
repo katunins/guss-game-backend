@@ -29,6 +29,10 @@ export class Gateway
     console.log('WebSocket initialized');
   }
 
+  private extraCount (count: number): number {
+    return count + Math.floor(count / 11) * 10;
+  }
+
   async handleConnection(client: Socket) {
     try {
       const payload = this.authService.getUserFromBearer(
@@ -55,10 +59,7 @@ export class Gateway
     client: Socket,
     payload: { round_uuid: string; username: string },
   ) {
-    let tap = await this.tapsService.click(payload, 1);
-    if (tap.count === 11) {
-      tap = await this.tapsService.click(payload, 10);
-    }
-    client.emit('update', { id: tap.id, count: tap.count });
+    const { id, count } = await this.tapsService.click(payload);
+    client.emit('update', { id, count: this.extraCount(count) });
   }
 }

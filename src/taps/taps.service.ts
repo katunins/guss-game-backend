@@ -32,8 +32,8 @@ export class TapsService {
         }
     }
 
-    async click({ username, round_uuid }: { username: string, round_uuid: string }, amount: number) {
-        await this.tapsRepository.increment({ user: { username }, round: { uuid: round_uuid } }, 'count', amount)
+    async click({ username, round_uuid }: { username: string, round_uuid: string }) {
+        await this.tapsRepository.increment({ user: { username }, round: { uuid: round_uuid } }, 'count', 1)
         return this.tapsRepository.findOneBy({ user: { username }, round: { uuid: round_uuid } })
     }
 
